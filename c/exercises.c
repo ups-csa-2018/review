@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include <errno.h>
 
 void exercise1()
 {
@@ -168,6 +169,83 @@ void exercise5()
     free(message);
 }
 
+void _exercise6_cutting_minutes(int *hours, int *minutes)
+{
+    *hours += *minutes / 60;
+    *minutes = *minutes % 60;
+}
+
+void exercise6()
+{
+    int heures = 0, minutes = 120;
+    _exercise6_cutting_minutes(&heures, &minutes);
+    printf("%d heures et %d minutes.\n", heures, minutes);
+}
+
+void _exercise7(int *array, size_t size, int max)
+{
+    for (int i = 0; i < size; i++) {
+        if (array[i] > max) {
+            array[i] = 0;
+        }
+    }
+}
+
+void exercise7()
+{
+    int array[3] = {2, 4, 6};
+    _exercise7(array, 3, 4);
+
+    printf("%d, %d, %d\n", array[0], array[1], array[2]);
+}
+
+void exercise8()
+{
+    int array[10];
+
+    printf("Variable array[10] is an array of integers.\n");
+    printf("Integer size is: %zu bytes.\n", sizeof(int));
+
+    for (int i = 0; i < 10; i++) {
+        printf("array[%d] is at 0x%p\n", i, &array[i]);
+    }
+}
+
+void exercise9()
+{
+    char *file;
+    FILE *fp;
+    char s[255];
+    char *r;
+
+    printf("Write the file to read:\n");
+
+    if (1 != scanf("%m[^\n]s", &file)) {
+        fprintf(stderr, "Unable to read the file to read.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (NULL == (fp = fopen(file, "r"))) {
+        fprintf(stderr, "Unable to open file %s: %s.\n", file, strerror(errno));
+        free(file);
+        exit(EXIT_FAILURE);
+    }
+
+    while (NULL != (r = fgets(s, 255, fp))) {
+        printf("%s", s);
+    }
+
+    if (0 != errno) {
+        printf("Unable to read the whole file: %s.\n", strerror(errno));
+        fclose(fp);
+        free(file);
+        exit(EXIT_FAILURE);
+    }
+
+    fclose(fp);
+    free(file);
+}
+
 void init()
 {
     unsigned int seed = time(NULL);
@@ -193,6 +271,10 @@ int main(int argc, char **argv)
         case 3: exercise3(); break;
         case 4: exercise4(); break;
         case 5: exercise5(); break;
+        case 6: exercise6(); break;
+        case 7: exercise7(); break;
+        case 8: exercise8(); break;
+        case 9: exercise9(); break;
         default:
             fprintf(
                 stderr,
