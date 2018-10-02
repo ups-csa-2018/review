@@ -52,13 +52,10 @@ void exercise3()
         exit(EXIT_FAILURE);
     }
 
-    if (x <= 0 || x > 6 || y <= 0 || y > 6) {
-        fprintf(stderr, "Matrix dimesions should not exceed 6x6.\n");
+    if (x <= 0 || x >= 6 || y <= 0 || y >= 6) {
+        fprintf(stderr, "Matrix dimesions should not exceed 5x5.\n");
         exit(EXIT_FAILURE);
     }
-
-    x--;
-    y--;
 
     // I was not sure if the goal of this exercise was to write an algorithm that
     // manipulate a multi dimentionnal array, or not. So I used one anyway.
