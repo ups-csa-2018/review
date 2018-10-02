@@ -3,6 +3,7 @@
 #include <time.h>
 #include <string.h>
 #include <errno.h>
+#include <pthread.h>
 
 void exercise1()
 {
@@ -246,6 +247,109 @@ void exercise9()
     free(file);
 }
 
+struct _exercise11_thread_job
+{
+    unsigned short rows_nb;
+    int offset;
+    int (*matrix)[5];
+    int result;
+};
+
+void *_exercise11_thread(void *args)
+{
+    struct _exercise11_thread_job *job = args;
+
+    for (int i = 0; i < job->rows_nb; i++) {
+        int sum = 0;
+
+        for (int j = 0; j < 5; j++) {
+            sum += job->matrix[job->offset + i][j];
+        }
+
+        printf("The total in row %d is %d\n", job->offset + i, sum);
+
+        job->result += sum;
+    }
+
+    return NULL;
+}
+
+void exercise11()
+{
+    // This is not exactly what was asked in the subject, but as I didn't want
+    // to create a global variable (which is bad!) for only one exercise, I
+    // created an _exercise11_thread_job structure which holds the thread
+    // context.
+    int matrix[10][5];
+    int threads_nb;
+    pthread_t *threads;
+    struct _exercise11_thread_job *thread_jobs;
+    int result;
+    int remaining_rows = 10;
+
+    printf("How many threads:\n");
+    if (1 != scanf("%d", &threads_nb)) {
+        fprintf(stderr, "Unable to read the number of threads.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (threads_nb <= 0 || threads_nb > 10) {
+        fprintf(stderr, "The number of threads must be between 1 and 10.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    threads = malloc(sizeof(pthread_t) * threads_nb);
+    thread_jobs = malloc(sizeof(struct _exercise11_thread_job) * threads_nb);
+
+    printf("Matrix:\n");
+
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 5; j++) {
+            matrix[i][j] = j + i * 5;
+            printf("%4d", matrix[i][j]);
+        }
+
+        printf("\n");
+    }
+
+    for (int i = 0; i < threads_nb; i++) {
+        thread_jobs[i].rows_nb = remaining_rows / (threads_nb - i);
+        thread_jobs[i].matrix = matrix;
+        thread_jobs[i].offset = 10 - remaining_rows;
+        remaining_rows -= thread_jobs[i].rows_nb;
+
+        int e = pthread_create(
+                &threads[i],
+                NULL,
+                _exercise11_thread,
+                (void *)&thread_jobs[i]);
+
+        if (0 != e) {
+            fprintf(stderr, "Unable to start thread #%d: %s\n", i, strerror(e));
+            free(threads);
+            free(thread_jobs);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    for (int i = 0; i < threads_nb; i++) {
+        int e = pthread_join(threads[i], NULL);
+        if (0 != e) {
+            fprintf(stderr, "Unable to wait for thread #%d: %s\n", i, strerror(e));
+            free(threads);
+            free(thread_jobs);
+            exit(EXIT_FAILURE);
+        }
+
+        result += thread_jobs[i].result;
+    }
+
+    printf("The total values in the matrix is %d\n", result);
+
+    free(threads);
+    free(thread_jobs);
+}
+
 void init()
 {
     unsigned int seed = time(NULL);
@@ -275,6 +379,7 @@ int main(int argc, char **argv)
         case 7: exercise7(); break;
         case 8: exercise8(); break;
         case 9: exercise9(); break;
+        case 11: exercise11(); break;
         default:
             fprintf(
                 stderr,
