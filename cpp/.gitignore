@@ -1,0 +1,15 @@
+.cache
+.deps
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache
+compile_commands.json
+config.log
+config.status
+configure
+depcomp
+exercices
+exercices.o
+install-sh
+missing
